@@ -1,0 +1,28 @@
+#python
+*.egg-info
+*.egg
+*.EGG
+*.EGG-INFO
+bin
+build
+develop-eggs
+eggs
+fake-eggs
+parts
+dist
+.installed.cfg
+.mr.developer.cfg
+*.py[co]
+*.tmp*
+
+# cvs
+.hg
+.bzr
+.svn
+
+# os/ides/editors
+.DS_Store
+.codeintel
+*.sublime-project
+*.sublime-workspace
+.idea

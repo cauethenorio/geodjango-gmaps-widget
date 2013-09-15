@@ -1,3 +1,10 @@
+GeoDjango Google Maps Widget
+
+Google Maps v3 drop in replacement of the Geodjango's admin OpenLayers
+Geometries widget
+
+https://github.com/cauethenorio/geodjango-gmaps-widget
+
 The MIT License (MIT)
 
 Copyright (c) 2013 Cauê Thenório

@@ -1,0 +1,32 @@
+{% load i18n %}
+<style type="text/css">{% block map_css %}
+    #{{ id }}_map { width: {{ map_size.width }}; height: {{ map_size.height }}; border:1px solid #CCC;}
+    #{{ id }}_map .aligned label { float: inherit; }
+    #{{ id }}_div_map { position: relative; vertical-align: top; float: {{ LANGUAGE_BIDI|yesno:"right,left" }}; }
+    {% if not display_raw %}#{{ id }} { display: none; }{% endif %}{% endblock %}
+</style>
+
+<div id="{{ id }}_div_map gmapsy_container">
+    <div id="{{ id }}_map" class="gmapsy_map"></div>
+    <a id="{{ id }}_remove_link" href="">{% trans 'Delete' %}</a>
+    <textarea id="{{ id }}" name="{{ name }}">{{ serialized }}</textarea>
+</div>
+
+<script type="text/javascript">
+    (function($){
+        var {{ module }} = new GmapsWidget(
+            $('#{{ id }}').get(0),
+            $('#{{ id }}_map').get(0),
+            {
+                'map_start': {{ map_start|safe }},
+                'address': {{ address|safe }},
+                'geom_type': '{{ geom_type }}'
+            }
+        );
+
+        $('#{{ id }}_remove_link').click(function(ev) {
+            ev.preventDefault();
+            {{ module }}.removeGeometry();
+        });
+    })($ || (django && django.jQuery));
+</script>

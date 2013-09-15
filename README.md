@@ -1,4 +1,5 @@
-geodjango-gmap-widget
-=====================
+geodjango-gmaps-widget
+======================
 
-Google Maps v3 drop in replacement of the Geodjango's admin OpenLayers Geometries widget
+Flexible Google Maps v3 drop in replacement for the default Geodjango admin
+OpenLayers widget.
