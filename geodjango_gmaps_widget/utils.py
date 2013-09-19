@@ -13,3 +13,8 @@ def dict_update(target_dict, *update_list):
                 else:
                     target_dict[k] = u[k]
     return target_dict
+
+
+def class_to_dict(cls):
+    return dict([(k, getattr(cls, k)) for k in dir(cls)
+          if not k.startswith('_')])

@@ -2,12 +2,15 @@ from django.contrib.admin import ModelAdmin
 from django.contrib.gis.db import models
 
 from .widgets import GmapsWidget
-from .utils import dict_update
+from .utils import dict_update, class_to_dict
 
 class GmapsGeoModelAdmin(ModelAdmin):
 
-    gmap_attrs = None
     map_widget = GmapsWidget
+    gmap_attrs = None
+
+    class GmapAttributes:
+        pass
 
     def formfield_for_dbfield(self, db_field, **kwargs):
         """
@@ -31,10 +34,12 @@ class GmapsGeoModelAdmin(ModelAdmin):
         in this class.
         """
         gmaps_model_admin = self
+
         class ConfiguredGmapWidget(self.map_widget):
 
             def __init__(self, *args, **kwargs):
                 super(ConfiguredGmapWidget, self).__init__(
-                    attrs=gmaps_model_admin.gmap_attrs, *args, **kwargs)
+                    attrs=class_to_dict(gmaps_model_admin.GmapAttributes),
+                        *args, **kwargs)
 
         return ConfiguredGmapWidget

@@ -9,40 +9,53 @@ from .utils import dict_update
 
 
 class GmapsWidget(geowidgets.BaseGeometryWidget):
+
     template_name = 'gmaps-widget/map-widget.html'
 
-    default_attrs = {
-        'gmaps_url': {
-            'base': 'http://maps.googleapis.com/maps/api/js?libraries=drawing',
-            'sensor': False,
-            'key': '',
-        },
-        'map_size': {
-            'width': 600,
-            'height': 400,
-        },
-        'map_start': {
-            'zoom': 2,
-            'lat': 0,
-            'lng': 0,
-            'type': 'ROADMAP',
-        },
-        'behavior': {
-            'display_wkt': False,
-            'max_zoom': False,
-            'min_zoom': False,
-            'max_extent': False,
-            'modifiable': False,
-            'scrollable': False,
-            'point_zoom': 12,
-            'debug': False
-        },
-        'address': {
-            'field_name': None,
-            'geocode': True,
-            'reverse_geocode': False,
-        },
-    }
+    # These are the Gmap widget default properties, which can be overriden by:
+    #    - __init__ method 'attrs' parameter
+    #    - render method 'attrs' parameter
+    gmaps_base_url = 'http://maps.googleapis.com/maps/api/js?libraries=drawing'
+    use_gmaps_sensor = False
+    gmaps_key = ''
+
+    width = 600
+    height = 400
+
+    default_zoom = 2
+    default_lat = 0
+    default_lng = 0
+    default_type = 'ROADMAP'
+
+    display_wkt = False
+    max_zoom = False
+    min_zoom = False
+    max_extent = False
+    modifiable = True
+    scrollable = True
+    point_zoom = 12
+    debug = False
+
+    address_field = None
+    address_geocode = True
+    address_geocoder_restrictions = None
+    address_update = False
+
+
+    # all class attributes which will be in render context
+    public_attrs = ['gmaps_url', 'width', 'height', 'default_zoom',
+                    'default_lat', 'default_lng', 'default_type',
+                    'display_wkt', 'max_zoom', 'min_zoom', 'max_extent',
+                    'modifiable', 'scrollable', 'point_zoom', 'debug',
+                    'address_field', 'address_geocode', 'address_update',
+                    'address_geocoder_restrictions']
+
+    needs_unit_sanitize = ['width', 'height']
+    not_used_in_widget_js = ['gmaps_url', 'width', 'height']
+
+    def __init__(self, attrs=None, *args, **kwargs):
+        super(GmapsWidget, self).__init__(attrs=attrs, *args, **kwargs)
+        self.update_attrs_from_dict(attrs or {})
 
     @property
     def media(self):
@@ -50,31 +63,43 @@ class GmapsWidget(geowidgets.BaseGeometryWidget):
             js = (self.gmaps_url,
                   'gmaps-widget/js/wicket.js',
                   'gmaps-widget/js/wicket-gmap3.js',
-                  'gmaps-widget/js/GmapsWidget.min.js',))
+                  'gmaps-widget/js/GmapsWidget.js',))
 
-    def __init__(self, attrs=None, *args, **kwargs):
-        super(GmapsWidget, self).__init__(attrs=attrs, *args, **kwargs)
-        self.attrs = dict_update(self.default_attrs, self.attrs, attrs)
+    def update_attrs_from_dict(self, dict_attrs):
+        [setattr(self, k, v) for k, v in dict_attrs.items()
+         if k in self.public_attrs and not k.startswith('_')]
 
-    def format_attrs(self):
-        for key in ['width', 'height']:
-            val = self.attrs['map_size'][key]
+    def format_attrs_for_template(self, aditional_keys={}):
+        template_dict = {}
+        widget_args_dict = {}
 
-            if isinstance(val, (long, int)) or val.isdigit():
-                self.attrs['map_size'][key] = '{}px'.format(val)
+        for attr in self.public_attrs:
+            if attr in self.needs_unit_sanitize:
+                setattr(self, attr, self.sanitize_unit(getattr(self, attr)))
 
-        for key in ['map_start', 'behavior', 'address']:
-            self.attrs[key] = json.dumps(self.attrs[key])
+            if attr in self.not_used_in_widget_js:
+                template_dict[attr] = getattr(self, attr)
+            else:
+                widget_args_dict[attr] = getattr(self, attr)
+
+        template_dict.update({
+                'widget_args': json.dumps(widget_args_dict),
+                'modifiable': widget_args_dict['modifiable'],
+            }, **aditional_keys)
+        return template_dict
+
+    def sanitize_unit(self, val):
+        if isinstance(val, (long, int)) or val.isdigit():
+            return '{}px'.format(val)
+        return val
 
     @property
     def gmaps_url(self):
-        attrs = self.attrs.get('gmaps_url')
-        key = attrs.get('key') and '&key={}'.format(attrs.get('key')) or ''
-        sensor = '&sensor={}'.format(str(attrs.get('sensor')).lower())
-        return "{}{}{}".format(attrs.get('base'), sensor, key)
+        key = getattr(self, 'gmaps_key') and '&key={}'.format(self.gmaps_key) or ''
+        sensor = '&sensor={}'.format(str(self.use_gmaps_sensor).lower())
+        return "{}{}{}".format(self.gmaps_base_url, sensor, key)
 
     def render(self, name, value, attrs={}):
-        self.attrs = dict_update(self.attrs, attrs,
-                            {'module': 'gmaps_%s' % name.replace('-','_')})
-        self.format_attrs()
-        return super(GmapsWidget, self).render(name, value, self.attrs)
+        attrs['module'] = 'gmaps_%s' % name.replace('-', '_')
+        prepared_attrs = self.format_attrs_for_template(attrs)
+        return super(GmapsWidget, self).render(name, value, prepared_attrs)

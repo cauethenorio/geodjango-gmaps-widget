@@ -1,7 +1,7 @@
 {% load i18n %}
 <style type="text/css">{% block map_css %}
-    #{{ id }}_div_map { width: {{ map_size.width }}; position: relative; vertical-align: top; float: {{ LANGUAGE_BIDI|yesno:"right,left" }}; }
-    #{{ id }}_map { height: {{ map_size.height }}; border:1px solid #CCC; }
+    #{{ id }}_div_map { width: {{ width }}; position: relative; vertical-align: top; float: {{ LANGUAGE_BIDI|yesno:"right,left" }}; }
+    #{{ id }}_map { height: {{ height }}; border:1px solid #CCC; }
     #{{ id }}_map .aligned label { float: inherit; }
 
     {% if not display_raw %}#{{ id }} { display: none; }{% endif %}{% endblock %}
@@ -9,7 +9,9 @@
 
 <div id="{{ id }}_div_map" class="gmaps_container">
     <div id="{{ id }}_map" class="gmaps_map"></div>
+    {% if modifiable %}
     <a id="{{ id }}_remove_link" href="">{% trans 'Delete' %}</a>
+    {% endif %}
     <textarea id="{{ id }}" name="{{ name }}">{{ serialized }}</textarea>
 </div>
 
@@ -18,17 +20,15 @@
         var {{ module }} = new GmapsWidget(
             $('#{{ id }}').get(0),
             $('#{{ id }}_map').get(0),
-            {
-                'map_start': {{ map_start|safe }},
-                'behavior': {{ behavior|safe }},
-                'address': {{ address|safe }},
-                'geom_type': '{{ geom_type }}'
-            }
+            '{{ geom_type }}',
+            {{ widget_args|safe }}
         );
 
+        {% if modifiable %}
         $('#{{ id }}_remove_link').click(function(ev) {
             ev.preventDefault();
-            {{ module }}.removeGeometry();
+            {{ module }}.removeFeature();
         });
+        {% endif %}
     })($ || (django && django.jQuery));
 </script>
