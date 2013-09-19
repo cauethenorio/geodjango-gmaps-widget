@@ -1,0 +1,5 @@
+include LICENSE
+include MANIFEST.in
+recursive-include geodjango_gmaps_widget/static/gmaps-widget/js *
+recursive-include geodjango_gmaps_widget/templates/gmaps-widget *
+recursive-exclude * *.py[co]
