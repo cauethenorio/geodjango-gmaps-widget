@@ -4,7 +4,7 @@
     #{{ id }}_map { height: {{ height }}; border:1px solid #CCC; }
     #{{ id }}_map .aligned label { float: inherit; }
 
-    {% if not display_raw %}#{{ id }} { display: none; }{% endif %}{% endblock %}
+    {% if not display_wkt%}#{{ id }} { display: none; }{% endif %}{% endblock %}
 </style>
 
 <div id="{{ id }}_div_map" class="gmaps_container">
