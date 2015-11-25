@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import six
 import json
 
 import django.forms
@@ -89,7 +90,7 @@ class GmapsWidget(geowidgets.BaseGeometryWidget):
         return template_dict
 
     def sanitize_unit(self, val):
-        if isinstance(val, (long, int)) or val.isdigit():
+        if isinstance(val, six.integer_types) or val.isdigit():
             return '{}px'.format(val)
         return val
 
